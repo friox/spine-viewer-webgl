@@ -1,6 +1,6 @@
 import { useSpineStore } from "@/stores/useSpineStore";
 import * as spine from "spine-webgl-4.2";
-import type { LoadedSpineFiles } from "../spineLoader";
+import type { LoadedSpineFiles } from "./spineLoader";
 import type { ISpineRenderer, SpineSlotInfo } from "./ISpineRenderer";
 
 export class SpineRenderer42 implements ISpineRenderer {

@@ -1,5 +1,5 @@
 import type { ISpineRenderer, SpineSlotInfo } from "@/lib/spine/ISpineRenderer";
-import type { LoadedSpineFiles } from "@/lib/spineLoader";
+import type { LoadedSpineFiles } from "@/lib/spine/spineLoader";
 import { create } from "zustand";
 
 export interface SpineStateValues {

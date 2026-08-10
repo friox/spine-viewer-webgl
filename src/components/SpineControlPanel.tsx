@@ -1,4 +1,4 @@
-import { processSpineFiles } from "@/lib/spineService";
+import { processSpineFiles } from "@/lib/spine/spineService";
 import { useSpineStore } from "@/stores/useSpineStore";
 import {
   RiArrowDownWideLine,

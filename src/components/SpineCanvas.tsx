@@ -1,6 +1,6 @@
 import type { ISpineRenderer } from "@/lib/spine/ISpineRenderer";
 import { SpineFactory } from "@/lib/spine/SpineFactory";
-import type { LoadedSpineFiles } from "@/lib/spineLoader";
+import type { LoadedSpineFiles } from "@/lib/spine/spineLoader";
 import { useSpineStore } from "@/stores/useSpineStore";
 import { useEffect, useRef } from "react";
 

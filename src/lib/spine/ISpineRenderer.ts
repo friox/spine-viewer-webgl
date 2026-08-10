@@ -1,4 +1,4 @@
-import type { LoadedSpineFiles } from "../spineLoader";
+import type { LoadedSpineFiles } from "./spineLoader";
 
 export interface SpineSlotInfo {
   name: string;
