@@ -46,4 +46,7 @@ export interface ISpineRenderer {
   
   // Performance
   onFrameUpdate?: (fps: number, frameTimeMs: number) => void;
+
+  // PNG Export
+  exportPng(filename?: string): void;
 }

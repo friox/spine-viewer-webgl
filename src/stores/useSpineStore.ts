@@ -39,6 +39,8 @@ export interface SpineActions {
   setShowGuideline: (show: boolean) => void;
   setPremultipliedAlpha: (pma: boolean) => void;
   setShowDebugBounds: (show: boolean) => void;
+
+  exportPng: (filename?: string) => void;
 }
 
 export type SpineState = SpineStateValues & SpineActions;
@@ -194,5 +196,10 @@ export const useSpineStore = create<SpineState>((set, get) => {
       set({ showDebugBounds: show });
       renderer?.setShowDebugBounds(show);
     },
+
+    exportPng: (filename) => {
+      const { renderer } = get();
+      renderer?.exportPng(filename);
+    }
   };
 });
