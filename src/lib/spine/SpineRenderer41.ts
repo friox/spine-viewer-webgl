@@ -569,6 +569,7 @@ export class SpineRenderer41 implements ISpineRenderer {
         const bitmap = page.texture.getImage();
         if (!bitmap) throw new Error(`exportPng: page image not found for ${page.name}`);
         const vTexture = new spine.GLTexture(vContext, bitmap);
+        newVirtualTextures.push(vTexture);
         page.setTexture(vTexture);
       }
 
