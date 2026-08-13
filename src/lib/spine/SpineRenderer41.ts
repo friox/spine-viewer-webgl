@@ -559,16 +559,14 @@ export class SpineRenderer41 implements ISpineRenderer {
     });
     const vSceneRenderer = new spine.SceneRenderer(virtualCanvas, vContext);
 
-    const originalTextures: Array<spine.GLTexture | undefined> = new Array(this.atlas.pages.length);
+    const originalTextures: spine.GLTexture[] = this.atlas.pages.map((p) => p.texture as spine.GLTexture);
     const newVirtualTextures: spine.GLTexture[] = [];
 
     try {
       for (let p = 0; p < this.atlas.pages.length; p++) {
         const page = this.atlas.pages[p];
-        const originalTexture = page.texture as spine.GLTexture | null;
-        if (!originalTexture) throw new Error(`exportPng: page texture not found for ${page.name}`);
-        originalTextures[p] = originalTexture;
-        const bitmap = originalTexture.getImage();
+        originalTextures[p] = page.texture as spine.GLTexture;
+        const bitmap = page.texture.getImage();
         if (!bitmap) throw new Error(`exportPng: page image not found for ${page.name}`);
         const vTexture = new spine.GLTexture(vContext, bitmap);
         newVirtualTextures.push(vTexture);
@@ -602,9 +600,8 @@ export class SpineRenderer41 implements ISpineRenderer {
 
     } finally {
       for (let p = 0; p < this.atlas.pages.length; p++) {
-        const originalTexture = originalTextures[p];
-        if (originalTexture) {
-          this.atlas.pages[p].setTexture(originalTexture);
+        if (originalTextures[p]) {
+          this.atlas.pages[p].setTexture(originalTextures[p]);
         }
       }
       newVirtualTextures.forEach((t) => t.dispose());
