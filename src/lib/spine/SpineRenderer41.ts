@@ -13,6 +13,7 @@ export class SpineRenderer41 implements ISpineRenderer {
   private disposed = false;
 
   // Skeleton, Animation State
+  private atlas: spine.TextureAtlas | null = null;
   private skeleton: spine.Skeleton | null = null;
   private animationState: spine.AnimationState | null = null;
   private paused: boolean = false;
@@ -65,6 +66,7 @@ export class SpineRenderer41 implements ISpineRenderer {
     if (this.disposed) return;
 
     const atlas = new spine.TextureAtlas(atlasText);
+    this.atlas = atlas;
     const pma = atlas.pages[0]?.pma ?? true;
     this.premultipliedAlpha = pma;
     useSpineStore.setState({ premultipliedAlpha: pma });
@@ -517,6 +519,92 @@ export class SpineRenderer41 implements ISpineRenderer {
       ctx.font = "11px sans-serif";
       ctx.fillText(`${Math.round(size.x)} x ${Math.round(size.y)}`, minX + 4, maxY - 6);
       ctx.restore();
+    }
+  }
+
+  // ==============================
+  // PNG Export
+  // ==============================
+  exportPng(filename?: string): void {
+    if (!this.skeleton || !this.atlas) return;
+
+    const offset = new spine.Vector2();
+    const size = new spine.Vector2();
+    const temp: number[] = [];
+    this.skeleton.getBounds(offset, size, temp);
+
+    let charWidth = size.x;
+    let charHeight = size.y;
+    let centerX = offset.x + size.x / 2;
+    let centerY = offset.y + size.y / 2;
+
+    if (charWidth <= 10 || charHeight <= 10 || !Number.isFinite(charWidth) || !Number.isFinite(charHeight)) {
+      charWidth = this.skeleton.data.width || 800;
+      charHeight = this.skeleton.data.height || 800;
+      centerX = 0;
+      centerY = charHeight / 2;
+    }
+
+    const padding = 16;
+    const exportWorldW = Math.round(charWidth) + padding * 2;
+    const exportWorldH = Math.round(charHeight) + padding * 2;
+
+    const virtualCanvas = document.createElement("canvas");
+    virtualCanvas.width = exportWorldW;
+    virtualCanvas.height = exportWorldH;
+
+    const vContext = new spine.ManagedWebGLRenderingContext(virtualCanvas, {
+      preserveDrawingBuffer: true,
+      stencil: true,
+    });
+    const vSceneRenderer = new spine.SceneRenderer(virtualCanvas, vContext);
+
+    const originalTextures: spine.GLTexture[] = this.atlas.pages.map((p) => p.texture as spine.GLTexture);
+    const newVirtualTextures: spine.GLTexture[] = [];
+
+    try {
+      for (let p = 0; p < this.atlas.pages.length; p++) {
+        const page = this.atlas.pages[p];
+        originalTextures[p] = page.texture as spine.GLTexture;
+        const bitmap = page.texture.getImage();
+        if (!bitmap) throw new Error(`exportPng: page image not found for ${page.name}`);
+        const vTexture = new spine.GLTexture(vContext, bitmap);
+        newVirtualTextures.push(vTexture);
+        page.setTexture(vTexture);
+      }
+
+      const camera = vSceneRenderer.camera;
+      camera.position.x = centerX;
+      camera.position.y = centerY;
+      camera.viewportWidth = exportWorldW;
+      camera.viewportHeight = exportWorldH;
+      camera.zoom = 1.0;
+      camera.update();
+  
+      const vGl = vContext.gl;
+      vGl.viewport(0, 0, exportWorldW, exportWorldH);
+      vGl.clearColor(0, 0, 0, 0);
+      vGl.clear(vGl.COLOR_BUFFER_BIT);
+  
+      vSceneRenderer.begin();
+      vSceneRenderer.drawSkeleton(this.skeleton, this.premultipliedAlpha);
+      vSceneRenderer.end();
+  
+      const dataUrl = virtualCanvas.toDataURL("image/png");
+      const link = document.createElement("a");
+      const timeStamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
+      link.download = filename || `spine_export_${timeStamp}.png`;
+      link.href = dataUrl;
+      link.click();
+    } catch (e) {
+
+    } finally {
+      for (let p = 0; p < this.atlas.pages.length; p++) {
+        if (originalTextures[p]) {
+          this.atlas.pages[p].setTexture(originalTextures[p]);
+        }
+      }
+      newVirtualTextures.forEach((t) => t.dispose());
     }
   }
   

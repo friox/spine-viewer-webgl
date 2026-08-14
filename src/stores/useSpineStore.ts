@@ -24,7 +24,6 @@ export interface SpineActions {
   setRenderer: (renderer: ISpineRenderer | null) => void;
 
   setIsPlaying: (playing: boolean) => void;
-  togglePlay: () => void;
   setTimeScale: (speed: number) => void;
 
   setAnimation: (name: string) => void;
@@ -33,12 +32,13 @@ export interface SpineActions {
   setSlotVisibility: (slotName: string, visible: boolean) => void;
   setAllSlotsVisibility: (visible: boolean, customTargetNames?: string[]) => void;
   setActiveSkinOnlySlots: (activeOnly: boolean) => void;
-  refreshSlots: () => void;
 
   setZoom: (zoom: number) => void;
   setShowGuideline: (show: boolean) => void;
   setPremultipliedAlpha: (pma: boolean) => void;
   setShowDebugBounds: (show: boolean) => void;
+
+  exportPng: (filename?: string) => void;
 }
 
 export type SpineState = SpineStateValues & SpineActions;
@@ -120,11 +120,6 @@ export const useSpineStore = create<SpineState>((set, get) => {
       else renderer?.pause();
     },
 
-    togglePlay: () => {
-      const { isPlaying, setIsPlaying } = get();
-      setIsPlaying(!isPlaying);
-    },
-
     setTimeScale: (speed) => {
       const { renderer } = get();
       set({ timeScale: speed });
@@ -166,11 +161,6 @@ export const useSpineStore = create<SpineState>((set, get) => {
       syncSlots(renderer, activeOnly);
     },
 
-    refreshSlots: () => {
-      const { renderer } = get();
-      syncSlots(renderer);
-    },
-
     setZoom: (zoom) => {
       const { renderer } = get();
       set({ zoom });
@@ -194,5 +184,10 @@ export const useSpineStore = create<SpineState>((set, get) => {
       set({ showDebugBounds: show });
       renderer?.setShowDebugBounds(show);
     },
+
+    exportPng: (filename) => {
+      const { renderer } = get();
+      renderer?.exportPng(filename);
+    }
   };
 });

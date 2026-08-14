@@ -50,6 +50,7 @@ export function SpineControlPanel() {
     setPremultipliedAlpha,
     setShowDebugBounds,
     setAllSlotsVisibility,
+    exportPng,
   } = useSpineStore();
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const fileList = e.target.files;
@@ -74,7 +75,7 @@ export function SpineControlPanel() {
     <div className="select-none">
       <div className="flex flex-col gap-1 p-5">
         <p className="text-xl font-bold">Spine Viewer WebGL</p>
-        <p className="text-sm text-muted-foreground">support v4.1, v4.2</p>
+        <a className="text-sm text-muted-foreground w-fit" href="https://github.com/friox/spine-viewer-webgl" target="_blank" rel="norefferer" title="github">#{__COMMIT_HASH__}</a>
       </div>
       <hr />
       <div className="flex flex-col gap-5 p-5">
@@ -91,13 +92,7 @@ export function SpineControlPanel() {
             <CardContent>
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
-                  <Button
-                    onClick={() => {
-                      fileInputRef.current?.click();
-                    }}
-                    className="w-full">
-                    스파인 데이터 선택
-                  </Button>
+                  <Button onClick={() => fileInputRef.current?.click()} className="w-full">스파인 데이터 선택</Button>
                   <input
                     ref={fileInputRef}
                     type="file"
@@ -106,7 +101,7 @@ export function SpineControlPanel() {
                     className="hidden"
                     onChange={handleFileChange}
                   />
-                  <Button className="w-full">PNG로 내보내기</Button>
+                  <Button onClick={() => exportPng()} className="w-full">PNG로 내보내기</Button>
                 </div>
                 <div className="flex flex-col gap-1 justify-start">
                   <p className="font-mono">
