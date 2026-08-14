@@ -565,6 +565,9 @@ export class SpineRenderer42 implements ISpineRenderer {
     try {
       for (let p = 0; p < this.atlas.pages.length; p++) {
         const page = this.atlas.pages[p];
+        if (!page.texture) {
+          throw new Error(`exportPng: page texture not found for ${page.name}`);
+        }
         originalTextures[p] = page.texture as spine.GLTexture;
         const bitmap = page.texture.getImage();
         if (!bitmap) throw new Error(`exportPng: page image not found for ${page.name}`);
