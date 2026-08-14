@@ -24,7 +24,6 @@ export interface SpineActions {
   setRenderer: (renderer: ISpineRenderer | null) => void;
 
   setIsPlaying: (playing: boolean) => void;
-  togglePlay: () => void;
   setTimeScale: (speed: number) => void;
 
   setAnimation: (name: string) => void;
@@ -33,7 +32,6 @@ export interface SpineActions {
   setSlotVisibility: (slotName: string, visible: boolean) => void;
   setAllSlotsVisibility: (visible: boolean, customTargetNames?: string[]) => void;
   setActiveSkinOnlySlots: (activeOnly: boolean) => void;
-  refreshSlots: () => void;
 
   setZoom: (zoom: number) => void;
   setShowGuideline: (show: boolean) => void;
@@ -122,11 +120,6 @@ export const useSpineStore = create<SpineState>((set, get) => {
       else renderer?.pause();
     },
 
-    togglePlay: () => {
-      const { isPlaying, setIsPlaying } = get();
-      setIsPlaying(!isPlaying);
-    },
-
     setTimeScale: (speed) => {
       const { renderer } = get();
       set({ timeScale: speed });
@@ -166,11 +159,6 @@ export const useSpineStore = create<SpineState>((set, get) => {
       const { renderer } = get();
       set({ activeSkinOnlySlots: activeOnly });
       syncSlots(renderer, activeOnly);
-    },
-
-    refreshSlots: () => {
-      const { renderer } = get();
-      syncSlots(renderer);
     },
 
     setZoom: (zoom) => {
