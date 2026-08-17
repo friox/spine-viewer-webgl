@@ -22,12 +22,38 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Slider } from "./ui/slider";
 import { Switch } from "./ui/switch";
 
+function ZoomSlider() {
+  const zoom = useSpineStore((state) => state.zoom);
+  const setZoom = useSpineStore((state) => state.setZoom);
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex justify-between">
+        <p>확대 배율</p>
+        <p className="font-mono">{Math.round(zoom * 100)} %</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <Slider
+          value={[Math.round(zoom * 100)]}
+          min={10}
+          max={500}
+          step={10}
+          onValueChange={(val) => setZoom((val as number) / 100)}
+        />
+        <Button size="xs" onClick={() => setZoom(1.0)}>
+          <RiResetRightFill />
+          초기화
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export function SpineControlPanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const {
     loadedSpineFiles,
-    zoom,
     showGuideline,
     isPlaying,
     timeScale,
@@ -39,7 +65,6 @@ export function SpineControlPanel() {
     activeSkinOnlySlots,
     premultipliedAlpha,
     showDebugBounds,
-    setZoom,
     setShowGuideline,
     setIsPlaying,
     setTimeScale,
@@ -312,25 +337,7 @@ export function SpineControlPanel() {
           {expanded.display && (
             <CardContent>
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <div className="flex justify-between">
-                    <p>확대 배율</p>
-                    <p className="font-mono">{Math.round(zoom * 100)} %</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Slider
-                      value={[Math.round(zoom * 100)]}
-                      min={10}
-                      max={500}
-                      step={10}
-                      onValueChange={(val) => setZoom((val as number) / 100)}
-                    />
-                    <Button size="xs" onClick={() => setZoom(1.0)}>
-                      <RiResetRightFill />
-                      초기화
-                    </Button>
-                  </div>
-                </div>
+                <ZoomSlider />
                 <div className="flex flex-col gap-2">
                   <Item variant="outline" className="bg-input/30 border-input">
                     <ItemContent>
