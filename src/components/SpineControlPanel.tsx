@@ -290,7 +290,7 @@ export function SpineControlPanel() {
                         onClick={() => setSlotVisibility(slot.name, !slot.visible)}
                         className={`flex flex-col border border-input py-2 px-3 gap-1 cursor-pointer transition-opacity ${slot.visible ? "bg-input/30 opacity-100" : "bg-input/10 opacity-40"}`}>
                         <p className="leading-none">{slot.name}</p>
-                        <p className="leading-none text-muted-foreground">{slot.attachmentName || "-"}</p>
+                        <p className="leading-none text-muted-foreground">{slot.attachmentName.length > 0 ? slot.attachmentName.join(", ") : "-"}</p>
                       </div>
                     ))}
                   </div>
