@@ -3,7 +3,7 @@ import type { LoadedSpineFiles } from "./spineLoader";
 export interface SpineSlotInfo {
   name: string;
   visible: boolean;
-  attachmentName: string | null;
+  attachmentName: string[];
 }
 
 export interface ISpineRenderer {
@@ -28,7 +28,7 @@ export interface ISpineRenderer {
   setSkin(name: string): void;
   getCurrentSkin(): string | null;
   getSkins(): string[];
-  getSlots(activeSkinOnly?: boolean): SpineSlotInfo[];
+  getSlots(): SpineSlotInfo[];
   setSlotVisibility(slotName: string, visible: boolean): void;
   setAllSlotsVisibility(visible: boolean, targetSlotNames?: string[]): void;
 
