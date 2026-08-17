@@ -25,6 +25,7 @@ import { Switch } from "./ui/switch";
 export function SpineControlPanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [onlyActiveParts, setOnlyActiveParts] = useState(true);
   const {
     loadedSpineFiles,
     zoom,
@@ -59,7 +60,12 @@ export function SpineControlPanel() {
     processSpineFiles(selectedFiles);
     e.target.value = "";
   };
-  const filteredSlots = slots.filter((slot) => slot.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredSlots = slots
+    .filter((slot) => {
+      if (onlyActiveParts && slot.attachmentName.length === 0) return false;
+      return slot.name.toLowerCase().includes(searchTerm.toLowerCase());
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
   const hiddenCount = slots.filter((slot) => !slot.visible).length;
   const [expanded, setExpanded] = useState({
     data: true,
@@ -71,6 +77,7 @@ export function SpineControlPanel() {
   const toggle = (key: keyof typeof expanded) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
   return (
     <div className="select-none">
       <div className="flex flex-col gap-1 p-5">
@@ -255,8 +262,8 @@ export function SpineControlPanel() {
                   </ItemContent>
                   <ItemActions>
                     <Switch
-                      checked={activeSkinOnlySlots}
-                      onCheckedChange={(checked) => setActiveSkinOnlySlots(checked)}
+                      checked={onlyActiveParts}
+                      onCheckedChange={(checked) => setOnlyActiveParts(checked)}
                     />
                   </ItemActions>
                 </Item>
