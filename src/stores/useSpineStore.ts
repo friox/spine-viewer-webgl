@@ -12,7 +12,6 @@ export interface SpineStateValues {
   currentAnimation: string | null;
   currentSkin: string | null;
   slots: SpineSlotInfo[];
-  activeSkinOnlySlots: boolean;
   zoom: number;
   showGuideline: boolean;
   premultipliedAlpha: boolean;
@@ -31,7 +30,6 @@ export interface SpineActions {
 
   setSlotVisibility: (slotName: string, visible: boolean) => void;
   setAllSlotsVisibility: (visible: boolean, customTargetNames?: string[]) => void;
-  setActiveSkinOnlySlots: (activeOnly: boolean) => void;
 
   setZoom: (zoom: number) => void;
   setShowGuideline: (show: boolean) => void;
@@ -44,10 +42,9 @@ export interface SpineActions {
 export type SpineState = SpineStateValues & SpineActions;
 
 export const useSpineStore = create<SpineState>((set, get) => {
-  const syncSlots = (renderer: ISpineRenderer | null, activeOnly?: boolean) => {
+  const syncSlots = (renderer: ISpineRenderer | null) => {
     if (!renderer) return;
-    const filterState = activeOnly ?? get().activeSkinOnlySlots;
-    set({ slots: renderer.getSlots(filterState) });
+    set({ slots: renderer.getSlots() });
   };
 
   return {
@@ -81,7 +78,6 @@ export const useSpineStore = create<SpineState>((set, get) => {
           timeScale,
           zoom,
           showGuideline,
-          activeSkinOnlySlots,
           premultipliedAlpha,
           showDebugBounds,
         } = get();
@@ -100,7 +96,7 @@ export const useSpineStore = create<SpineState>((set, get) => {
           skins: renderer.getSkins(),
           currentAnimation: renderer.getCurrentAnimation(),
           currentSkin: renderer.getCurrentSkin(),
-          slots: renderer.getSlots(activeSkinOnlySlots),
+          slots: renderer.getSlots(),
         });
       } else {
         set({
@@ -153,12 +149,6 @@ export const useSpineStore = create<SpineState>((set, get) => {
         renderer.setAllSlotsVisibility(visible, targetNames);
         syncSlots(renderer);
       }
-    },
-
-    setActiveSkinOnlySlots: (activeOnly) => {
-      const { renderer } = get();
-      set({ activeSkinOnlySlots: activeOnly });
-      syncSlots(renderer, activeOnly);
     },
 
     setZoom: (zoom) => {
