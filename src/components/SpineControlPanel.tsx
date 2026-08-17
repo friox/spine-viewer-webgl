@@ -252,7 +252,7 @@ export function SpineControlPanel() {
                   <InputGroupAddon>
                     <RiSearchLine />
                   </InputGroupAddon>
-                  <InputGroupAddon align="inline-end">{filteredSlots.length}개</InputGroupAddon>
+                  <InputGroupAddon align="inline-end">{slots.length} / {filteredSlots.length} 개</InputGroupAddon>
                 </InputGroup>
                 <Item variant="outline" className="bg-input/30 border-input">
                   <ItemContent>
