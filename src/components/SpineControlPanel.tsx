@@ -25,6 +25,7 @@ import { Switch } from "./ui/switch";
 export function SpineControlPanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [onlyActiveParts, setOnlyActiveParts] = useState(true);
   const {
     loadedSpineFiles,
     zoom,
@@ -36,7 +37,6 @@ export function SpineControlPanel() {
     currentAnimation,
     currentSkin,
     slots,
-    activeSkinOnlySlots,
     premultipliedAlpha,
     showDebugBounds,
     setZoom,
@@ -46,7 +46,6 @@ export function SpineControlPanel() {
     setAnimation,
     setSkin,
     setSlotVisibility,
-    setActiveSkinOnlySlots,
     setPremultipliedAlpha,
     setShowDebugBounds,
     setAllSlotsVisibility,
@@ -59,7 +58,12 @@ export function SpineControlPanel() {
     processSpineFiles(selectedFiles);
     e.target.value = "";
   };
-  const filteredSlots = slots.filter((slot) => slot.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredSlots = slots
+    .filter((slot) => {
+      if (onlyActiveParts && slot.attachmentName.length === 0) return false;
+      return slot.name.toLowerCase().includes(searchTerm.toLowerCase());
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
   const hiddenCount = slots.filter((slot) => !slot.visible).length;
   const [expanded, setExpanded] = useState({
     data: true,
@@ -71,6 +75,7 @@ export function SpineControlPanel() {
   const toggle = (key: keyof typeof expanded) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
   return (
     <div className="select-none">
       <div className="flex flex-col gap-1 p-5">
@@ -247,7 +252,7 @@ export function SpineControlPanel() {
                   <InputGroupAddon>
                     <RiSearchLine />
                   </InputGroupAddon>
-                  <InputGroupAddon align="inline-end">{filteredSlots.length}개</InputGroupAddon>
+                  <InputGroupAddon align="inline-end">{slots.length} / {filteredSlots.length} 개</InputGroupAddon>
                 </InputGroup>
                 <Item variant="outline" className="bg-input/30 border-input">
                   <ItemContent>
@@ -255,8 +260,8 @@ export function SpineControlPanel() {
                   </ItemContent>
                   <ItemActions>
                     <Switch
-                      checked={activeSkinOnlySlots}
-                      onCheckedChange={(checked) => setActiveSkinOnlySlots(checked)}
+                      checked={onlyActiveParts}
+                      onCheckedChange={(checked) => setOnlyActiveParts(checked)}
                     />
                   </ItemActions>
                 </Item>
@@ -290,7 +295,7 @@ export function SpineControlPanel() {
                         onClick={() => setSlotVisibility(slot.name, !slot.visible)}
                         className={`flex flex-col border border-input py-2 px-3 gap-1 cursor-pointer transition-opacity ${slot.visible ? "bg-input/30 opacity-100" : "bg-input/10 opacity-40"}`}>
                         <p className="leading-none">{slot.name}</p>
-                        <p className="leading-none text-muted-foreground">{slot.attachmentName || "-"}</p>
+                        <p className="leading-none text-muted-foreground">{slot.attachmentName.length > 0 ? slot.attachmentName.join(", ") : "-"}</p>
                       </div>
                     ))}
                   </div>
