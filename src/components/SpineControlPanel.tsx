@@ -65,6 +65,7 @@ export function SpineControlPanel() {
     slots,
     premultipliedAlpha,
     showDebugBounds,
+    showBoneLines,
     setShowGuideline,
     setIsPlaying,
     setTimeScale,
@@ -73,6 +74,7 @@ export function SpineControlPanel() {
     setSlotVisibility,
     setPremultipliedAlpha,
     setShowDebugBounds,
+    setShowBoneLines,
     setAllSlotsVisibility,
     exportPng,
   } = useSpineStore();
@@ -369,6 +371,14 @@ export function SpineControlPanel() {
                     </ItemContent>
                     <ItemActions>
                       <Switch checked={showDebugBounds} onCheckedChange={(checked) => setShowDebugBounds(checked)} />
+                    </ItemActions>
+                  </Item>
+                  <Item variant="outline" className="bg-input/30 border-input">
+                    <ItemContent>
+                      <ItemTitle>본 라인 표시</ItemTitle>
+                    </ItemContent>
+                    <ItemActions>
+                      <Switch checked={showBoneLines} onCheckedChange={(checked) => setShowBoneLines(checked)} />
                     </ItemActions>
                   </Item>
                 </div>
