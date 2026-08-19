@@ -16,6 +16,7 @@ export interface SpineStateValues {
   showGuideline: boolean;
   premultipliedAlpha: boolean;
   showDebugBounds: boolean;
+  showBoneLines: boolean;
 }
 
 export interface SpineActions {
@@ -35,6 +36,7 @@ export interface SpineActions {
   setShowGuideline: (show: boolean) => void;
   setPremultipliedAlpha: (pma: boolean) => void;
   setShowDebugBounds: (show: boolean) => void;
+  setShowBoneLines: (show: boolean) => void;
 
   exportPng: (filename?: string) => void;
 }
@@ -66,6 +68,7 @@ export const useSpineStore = create<SpineState>((set, get) => {
     showGuideline: true,
     premultipliedAlpha: true,
     showDebugBounds: false,
+    showBoneLines: false,
 
     setLoadedSpineFiles: (files) => set({ loadedSpineFiles: files }),
 
@@ -80,6 +83,7 @@ export const useSpineStore = create<SpineState>((set, get) => {
           showGuideline,
           premultipliedAlpha,
           showDebugBounds,
+          showBoneLines,
         } = get();
 
         if (isPlaying) renderer.play();
@@ -90,6 +94,7 @@ export const useSpineStore = create<SpineState>((set, get) => {
         renderer.setShowGuideline(showGuideline);
         renderer.setPremultipliedAlpha(premultipliedAlpha);
         renderer.setShowDebugBounds(showDebugBounds);
+        renderer.setShowBoneLines(showBoneLines);
 
         set({
           animations: renderer.getAnimations(),
@@ -173,6 +178,12 @@ export const useSpineStore = create<SpineState>((set, get) => {
       const { renderer } = get();
       set({ showDebugBounds: show });
       renderer?.setShowDebugBounds(show);
+    },
+
+    setShowBoneLines: (show) => {
+      const { renderer } = get();
+      set({ showBoneLines: show });
+      renderer?.setShowBoneLines(show);
     },
 
     exportPng: (filename) => {

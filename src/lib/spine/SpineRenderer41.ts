@@ -33,6 +33,7 @@ export class SpineRenderer41 implements ISpineRenderer {
   private premultipliedAlpha: boolean = true;
   private showGuideline: boolean = true;
   private showDebugBounds: boolean = false;
+  private showBoneLines: boolean = false;
   private overlayCtx: CanvasRenderingContext2D | null = null;
   private overlayDirty: boolean = true;
 
@@ -453,6 +454,11 @@ export class SpineRenderer41 implements ISpineRenderer {
     this.overlayDirty = true;
   }
 
+  setShowBoneLines(show: boolean): void {
+    this.showBoneLines = show;
+    this.overlayDirty = true;
+  }
+
   setOverlayContext(ctx: CanvasRenderingContext2D | null): void {
     this.overlayCtx = ctx;
     this.overlayDirty = true;
@@ -511,6 +517,58 @@ export class SpineRenderer41 implements ISpineRenderer {
       ctx.fillStyle = "#60A5FA";
       ctx.font = "11px sans-serif";
       ctx.fillText(`${Math.round(size.x)} x ${Math.round(size.y)}`, minX + 4, maxY - 6);
+      ctx.restore();
+    }
+
+    if (this.showBoneLines && this.skeleton) {
+      const bones = this.skeleton.bones;
+      const scaleX = width / camera.viewportWidth;
+      const scaleY = height / camera.viewportHeight;
+      const tempVec = new spine.Vector2();
+
+      const dotRadius = Math.max(0.6, Math.min(2.5 * this.zoom, 3.5));
+      const dynamicLineWidth = Math.max(0.6, Math.min(1.5 * this.zoom, 2.0));
+
+      ctx.save();
+      ctx.lineWidth = dynamicLineWidth;
+
+      for (const bone of bones) {
+        const startX = screenCenterX + (bone.worldX - camera.position.x) * scaleX;
+        const startY = screenCenterY - (bone.worldY - camera.position.y) * scaleY;
+
+        if (bone.data.length > 0) {
+          tempVec.set(bone.data.length, 0);
+          bone.localToWorld(tempVec);
+
+          const endX = screenCenterX + (tempVec.x - camera.position.x) * scaleX;
+          const endY = screenCenterY - (tempVec.y - camera.position.y) * scaleY;
+
+          ctx.strokeStyle = "#3B82F6"; // #3B82F680
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+        } else if (bone.data.length === 0) {
+          const baseLength = 8;
+          const endWorldX = bone.worldX + baseLength * bone.a;
+          const endWorldY = bone.worldY + baseLength * bone.b;
+          const endX = screenCenterX + (endWorldX - camera.position.x) * scaleX;
+          const endY = screenCenterY - (endWorldY - camera.position.y) * scaleY;
+
+          ctx.strokeStyle = "#22C55E";
+          ctx.lineWidth = 1.5;
+          ctx.beginPath();
+          ctx.moveTo(startX, startY);
+          ctx.lineTo(endX, endY);
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = "#22C55E";
+        ctx.beginPath();
+        ctx.arc(startX, startY, dotRadius, 0, Math.PI * 3);
+        ctx.fill();
+      }
+
       ctx.restore();
     }
   }
@@ -677,7 +735,7 @@ export class SpineRenderer41 implements ISpineRenderer {
             this.lastFpsTime = now;
           }
         }
-        if (this.showDebugBounds) this.overlayDirty = true;
+        if (this.showDebugBounds || this.showBoneLines) this.overlayDirty = true;
         if (this.overlayDirty && this.overlayCtx && this.canvas) {
           this.renderOverlay(this.overlayCtx, this.canvas.clientWidth, this.canvas.clientHeight);
           this.overlayDirty = false;
