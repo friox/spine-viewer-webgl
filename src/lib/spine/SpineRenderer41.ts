@@ -312,6 +312,7 @@ export class SpineRenderer41 implements ISpineRenderer {
         if (setupAttName) usedNames.add(setupAttName);
       }
       result.push({
+        id: slotIndex,
         name: slotName,
         visible: !isHiddenByUser,
         attachmentName: Array.from(usedNames),

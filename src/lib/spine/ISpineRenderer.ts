@@ -1,6 +1,7 @@
 import type { LoadedSpineFiles } from "./spineLoader";
 
 export interface SpineSlotInfo {
+  id: number;
   name: string;
   visible: boolean;
   attachmentName: string[];
