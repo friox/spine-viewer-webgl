@@ -22,12 +22,39 @@ import { ScrollArea } from "./ui/scroll-area";
 import { Slider } from "./ui/slider";
 import { Switch } from "./ui/switch";
 
+function ZoomSlider() {
+  const zoom = useSpineStore((state) => state.zoom);
+  const setZoom = useSpineStore((state) => state.setZoom);
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex justify-between">
+        <p>확대 배율</p>
+        <p className="font-mono">{Math.round(zoom * 100)} %</p>
+      </div>
+      <div className="flex items-center gap-3">
+        <Slider
+          value={[Math.round(zoom * 100)]}
+          min={10}
+          max={500}
+          step={10}
+          onValueChange={(val) => setZoom((val as number) / 100)}
+        />
+        <Button size="xs" onClick={() => setZoom(1.0)}>
+          <RiResetRightFill />
+          초기화
+        </Button>
+      </div>
+    </div>
+  )
+}
+
 export function SpineControlPanel() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [searchTerm, setSearchTerm] = useState("");
+  const [onlyActiveParts, setOnlyActiveParts] = useState(true);
   const {
     loadedSpineFiles,
-    zoom,
     showGuideline,
     isPlaying,
     timeScale,
@@ -36,19 +63,18 @@ export function SpineControlPanel() {
     currentAnimation,
     currentSkin,
     slots,
-    activeSkinOnlySlots,
     premultipliedAlpha,
     showDebugBounds,
-    setZoom,
+    showBoneLines,
     setShowGuideline,
     setIsPlaying,
     setTimeScale,
     setAnimation,
     setSkin,
     setSlotVisibility,
-    setActiveSkinOnlySlots,
     setPremultipliedAlpha,
     setShowDebugBounds,
+    setShowBoneLines,
     setAllSlotsVisibility,
     exportPng,
   } = useSpineStore();
@@ -59,7 +85,12 @@ export function SpineControlPanel() {
     processSpineFiles(selectedFiles);
     e.target.value = "";
   };
-  const filteredSlots = slots.filter((slot) => slot.name.toLowerCase().includes(searchTerm.toLowerCase()));
+  const filteredSlots = slots
+    .filter((slot) => {
+      if (onlyActiveParts && slot.attachmentName.length === 0) return false;
+      return slot.name.toLowerCase().includes(searchTerm.toLowerCase());
+    })
+    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }));
   const hiddenCount = slots.filter((slot) => !slot.visible).length;
   const [expanded, setExpanded] = useState({
     data: true,
@@ -71,11 +102,12 @@ export function SpineControlPanel() {
   const toggle = (key: keyof typeof expanded) => {
     setExpanded((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
   return (
     <div className="select-none">
       <div className="flex flex-col gap-1 p-5">
         <p className="text-xl font-bold">Spine Viewer WebGL</p>
-        <a className="text-sm text-muted-foreground w-fit" href="https://github.com/friox/spine-viewer-webgl" target="_blank" rel="norefferer" title="github">#{__COMMIT_HASH__}</a>
+        <a className="text-sm text-muted-foreground w-fit font-mono uppercase" href="https://github.com/friox/spine-viewer-webgl" target="_blank" rel="norefferer" title="github">#{__COMMIT_HASH__}</a>
       </div>
       <hr />
       <div className="flex flex-col gap-5 p-5">
@@ -247,7 +279,7 @@ export function SpineControlPanel() {
                   <InputGroupAddon>
                     <RiSearchLine />
                   </InputGroupAddon>
-                  <InputGroupAddon align="inline-end">{filteredSlots.length}개</InputGroupAddon>
+                  <InputGroupAddon align="inline-end">{slots.length} / {filteredSlots.length} 개</InputGroupAddon>
                 </InputGroup>
                 <Item variant="outline" className="bg-input/30 border-input">
                   <ItemContent>
@@ -255,8 +287,8 @@ export function SpineControlPanel() {
                   </ItemContent>
                   <ItemActions>
                     <Switch
-                      checked={activeSkinOnlySlots}
-                      onCheckedChange={(checked) => setActiveSkinOnlySlots(checked)}
+                      checked={onlyActiveParts}
+                      onCheckedChange={(checked) => setOnlyActiveParts(checked)}
                     />
                   </ItemActions>
                 </Item>
@@ -288,9 +320,13 @@ export function SpineControlPanel() {
                       <div
                         key={slot.name}
                         onClick={() => setSlotVisibility(slot.name, !slot.visible)}
-                        className={`flex flex-col border border-input py-2 px-3 gap-1 cursor-pointer transition-opacity ${slot.visible ? "bg-input/30 opacity-100" : "bg-input/10 opacity-40"}`}>
-                        <p className="leading-none">{slot.name}</p>
-                        <p className="leading-none text-muted-foreground">{slot.attachmentName || "-"}</p>
+                        className={`flex items-center border border-input py-2 px-3 gap-3 cursor-pointer transition-opacity ${slot.visible ? "bg-input/30 opacity-100" : "bg-input/10 opacity-40"}`}
+                      >
+                        <p className="font-mono">{slot.id.toFixed(0).padStart(3, "0")}</p>
+                        <div className="flex flex-col gap-1">
+                          <p className="leading-none">{slot.name}</p>
+                          <p className="leading-none text-muted-foreground">{slot.attachmentName.length > 0 ? slot.attachmentName.join(", ") : "-"}</p>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -312,25 +348,7 @@ export function SpineControlPanel() {
           {expanded.display && (
             <CardContent>
               <div className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1">
-                  <div className="flex justify-between">
-                    <p>확대 배율</p>
-                    <p className="font-mono">{Math.round(zoom * 100)} %</p>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <Slider
-                      value={[Math.round(zoom * 100)]}
-                      min={10}
-                      max={500}
-                      step={10}
-                      onValueChange={(val) => setZoom((val as number) / 100)}
-                    />
-                    <Button size="xs" onClick={() => setZoom(1.0)}>
-                      <RiResetRightFill />
-                      초기화
-                    </Button>
-                  </div>
-                </div>
+                <ZoomSlider />
                 <div className="flex flex-col gap-2">
                   <Item variant="outline" className="bg-input/30 border-input">
                     <ItemContent>
@@ -357,6 +375,14 @@ export function SpineControlPanel() {
                     </ItemContent>
                     <ItemActions>
                       <Switch checked={showDebugBounds} onCheckedChange={(checked) => setShowDebugBounds(checked)} />
+                    </ItemActions>
+                  </Item>
+                  <Item variant="outline" className="bg-input/30 border-input">
+                    <ItemContent>
+                      <ItemTitle>본 라인 표시</ItemTitle>
+                    </ItemContent>
+                    <ItemActions>
+                      <Switch checked={showBoneLines} onCheckedChange={(checked) => setShowBoneLines(checked)} />
                     </ItemActions>
                   </Item>
                 </div>

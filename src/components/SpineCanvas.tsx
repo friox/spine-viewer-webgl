@@ -12,7 +12,7 @@ export function SpineCanvas() {
   const overlayCanvasRef = useRef<HTMLCanvasElement | null>(null);
   const rendererRef = useRef<ISpineRenderer | null>(null);
 
-  const { zoom, loadedSpineFiles } = useSpineStore();
+  const { loadedSpineFiles } = useSpineStore();
   const isDraggingRef = useRef(false);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
   const fpsTextRef = useRef<HTMLParagraphElement>(null);
@@ -190,6 +190,29 @@ export function SpineCanvas() {
     return () => resizeObserver.disconnect();
   }, []);
 
+  useEffect(() => {
+    const canvas = overlayCanvasRef.current;
+    if (!canvas) return;
+
+    const handleWheel = (e: WheelEvent) => {
+      e.preventDefault();
+      if (!rendererRef.current) return;
+
+      const mouseX = e.offsetX;
+      const mouseY = e.offsetY;
+
+      const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
+      const currentZoom = useSpineStore.getState().zoom;
+      const newZoom = Math.min(Math.max(0.1, currentZoom * zoomFactor), 5.0);
+
+      rendererRef.current.zoomAt(newZoom, mouseX, mouseY);
+      useSpineStore.setState({ zoom: newZoom });
+    };
+
+    canvas.addEventListener("wheel", handleWheel, { passive: false });
+    return () => canvas.removeEventListener("wheel", handleWheel);
+  }, []);
+
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     isDraggingRef.current = true;
     lastMousePosRef.current = { x: e.clientX, y: e.clientY };
@@ -211,19 +234,6 @@ export function SpineCanvas() {
     } catch {}
   };
 
-  const handleWheel = (e: React.WheelEvent<HTMLCanvasElement>) => {
-    e.preventDefault();
-    if (!rendererRef.current) return;
-    const rect = e.currentTarget.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-
-    const zoomFactor = e.deltaY > 0 ? 0.9 : 1.1;
-    const newZoom = Math.min(Math.max(0.1, zoom * zoomFactor), 5.0);
-    rendererRef.current.zoomAt(newZoom, mouseX, mouseY);
-    useSpineStore.setState({ zoom: newZoom });
-  };
-
   return (
     <div
       ref={containerRef}
@@ -240,7 +250,6 @@ export function SpineCanvas() {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
         onPointerCancel={handlePointerUp}
-        onWheel={handleWheel}
         className="w-full h-full block absolute inset-0 z-10 cursor-grab active:cursor-grabbing touch-none select-none"
       />
       {isDragOver && (

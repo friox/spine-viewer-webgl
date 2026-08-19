@@ -12,11 +12,11 @@ export interface SpineStateValues {
   currentAnimation: string | null;
   currentSkin: string | null;
   slots: SpineSlotInfo[];
-  activeSkinOnlySlots: boolean;
   zoom: number;
   showGuideline: boolean;
   premultipliedAlpha: boolean;
   showDebugBounds: boolean;
+  showBoneLines: boolean;
 }
 
 export interface SpineActions {
@@ -31,12 +31,12 @@ export interface SpineActions {
 
   setSlotVisibility: (slotName: string, visible: boolean) => void;
   setAllSlotsVisibility: (visible: boolean, customTargetNames?: string[]) => void;
-  setActiveSkinOnlySlots: (activeOnly: boolean) => void;
 
   setZoom: (zoom: number) => void;
   setShowGuideline: (show: boolean) => void;
   setPremultipliedAlpha: (pma: boolean) => void;
   setShowDebugBounds: (show: boolean) => void;
+  setShowBoneLines: (show: boolean) => void;
 
   exportPng: (filename?: string) => void;
 }
@@ -44,10 +44,9 @@ export interface SpineActions {
 export type SpineState = SpineStateValues & SpineActions;
 
 export const useSpineStore = create<SpineState>((set, get) => {
-  const syncSlots = (renderer: ISpineRenderer | null, activeOnly?: boolean) => {
+  const syncSlots = (renderer: ISpineRenderer | null) => {
     if (!renderer) return;
-    const filterState = activeOnly ?? get().activeSkinOnlySlots;
-    set({ slots: renderer.getSlots(filterState) });
+    set({ slots: renderer.getSlots() });
   };
 
   return {
@@ -69,6 +68,7 @@ export const useSpineStore = create<SpineState>((set, get) => {
     showGuideline: true,
     premultipliedAlpha: true,
     showDebugBounds: false,
+    showBoneLines: false,
 
     setLoadedSpineFiles: (files) => set({ loadedSpineFiles: files }),
 
@@ -81,9 +81,9 @@ export const useSpineStore = create<SpineState>((set, get) => {
           timeScale,
           zoom,
           showGuideline,
-          activeSkinOnlySlots,
           premultipliedAlpha,
           showDebugBounds,
+          showBoneLines,
         } = get();
 
         if (isPlaying) renderer.play();
@@ -94,13 +94,14 @@ export const useSpineStore = create<SpineState>((set, get) => {
         renderer.setShowGuideline(showGuideline);
         renderer.setPremultipliedAlpha(premultipliedAlpha);
         renderer.setShowDebugBounds(showDebugBounds);
+        renderer.setShowBoneLines(showBoneLines);
 
         set({
           animations: renderer.getAnimations(),
           skins: renderer.getSkins(),
           currentAnimation: renderer.getCurrentAnimation(),
           currentSkin: renderer.getCurrentSkin(),
-          slots: renderer.getSlots(activeSkinOnlySlots),
+          slots: renderer.getSlots(),
         });
       } else {
         set({
@@ -155,12 +156,6 @@ export const useSpineStore = create<SpineState>((set, get) => {
       }
     },
 
-    setActiveSkinOnlySlots: (activeOnly) => {
-      const { renderer } = get();
-      set({ activeSkinOnlySlots: activeOnly });
-      syncSlots(renderer, activeOnly);
-    },
-
     setZoom: (zoom) => {
       const { renderer } = get();
       set({ zoom });
@@ -183,6 +178,12 @@ export const useSpineStore = create<SpineState>((set, get) => {
       const { renderer } = get();
       set({ showDebugBounds: show });
       renderer?.setShowDebugBounds(show);
+    },
+
+    setShowBoneLines: (show) => {
+      const { renderer } = get();
+      set({ showBoneLines: show });
+      renderer?.setShowBoneLines(show);
     },
 
     exportPng: (filename) => {
